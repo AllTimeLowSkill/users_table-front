@@ -35,7 +35,7 @@
           <button class="btn btn-success size-btn" type="submit">Добавить пользователя</button> 
         </form>
       </template>
-        <table class="table">
+        <table class="table table-hover">
           <thead>
             <th scope="col">ID</th>
             <th scope="col">Firstname</th>
@@ -44,15 +44,20 @@
             <th scope="col">Phone</th>
           </thead>
           <tbody>
-            <tr @click="fetchUser(user._id)" v-for="(user, idx) in users" :key="idx">
+            <tr @click="fetchUser(user._id)" v-for="(user, idx) in displayPage" :key="idx">
               <th scope="row">{{ idx + 1 }}</th>
               <td>{{ user.firstName }}</td>
               <td>{{ user.lastName }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.phone }}</td>
             </tr>
-          </tbody>
+          </tbody>  
         </table>
+         <div class="clearfix btn-group col-md-2 offset-md-5">
+             <button type="button" class="btn btn-sm btn-outline-secondary" v-if="page != 1" @click="page--"> - </button>
+             <button type="button" class="btn btn-sm btn-outline-secondary" v-for="(pageNumber, idx) in pages.slice(page-1, page+5)" :key="idx" @click="page = pageNumber"> {{pageNumber}} </button>
+             <button type="button" @click="page++" v-if="page < pages.length" class="btn btn-sm btn-outline-secondary"> + </button>
+           </div>
       <template v-if="user._id">
         <div class="card">
           <div class="card-body">
@@ -87,9 +92,11 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import paginatorMixin from './mixins/table_paginate'
 
 export default {
   name: 'App',
+  mixins: [paginatorMixin],
   data(){
     return {
       isCreate: false,
@@ -104,10 +111,15 @@ export default {
     ...mapGetters({
       users: 'users',
       user: 'user'
-    })
+    }),
+
+    displayPage(){
+      return this.paginate(this.users)
+    }
   },
   mounted(){
     this.fetchUsers()
+    this.setPages()
   },
   methods: {
     ...mapActions({
@@ -123,6 +135,7 @@ export default {
     addUser(data){
       this.fetchCreateUser(data)
       this.fetchUsers()
+      this.isCreate = !this.isCreate
     }
   }
 }
