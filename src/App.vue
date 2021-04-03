@@ -37,15 +37,55 @@
       </template>
         <table class="table table-hover">
           <thead>
-            <th scope="col">ID</th>
-            <th scope="col">Firstname</th>
-            <th scope="col">Lastname</th>
-            <th scope="col">Email</th>
-            <th scope="col">Phone</th>
+            <th scope="col">
+              ID
+              <template v-if="!isSorted">
+                <button @click="users.sort(sortByFieldUp('id'))" class="btn">&darr;</button>
+              </template>
+              <template v-else>
+                <button @click="users.sort(sortByFieldDown('id'))" class="btn">&uarr;</button>
+              </template>
+            </th>
+            <th scope="col">
+              Firstname
+              <template v-if="!isSorted">
+                <button @click="users.sort(sortByFieldUp('firstName'))" class="btn">&darr;</button>
+              </template>
+              <template v-else>
+                <button @click="users.sort(sortByFieldDown('firstName'))" class="btn">&uarr;</button>
+              </template>
+            </th>
+            <th scope="col">
+              Lastname
+              <template v-if="!isSorted">
+                <button @click="users.sort(sortByFieldUp('lastName'))" class="btn">&darr;</button>
+              </template>
+              <template v-else>
+                <button @click="users.sort(sortByFieldDown('lastName'))" class="btn">&uarr;</button>
+              </template>
+            </th>
+            <th scope="col">
+              Email
+              <template v-if="!isSorted">
+                <button @click="users.sort(sortByFieldUp('email'))" class="btn">&darr;</button>
+              </template>
+              <template v-else>
+                <button @click="users.sort(sortByFieldDown('email'))" class="btn">&uarr;</button>
+              </template>
+            </th>
+            <th scope="col">
+              Phone
+              <template v-if="!isSorted">
+                <button @click="users.sort(sortByFieldUp('phone'))" class="btn">&darr;</button>
+              </template>
+              <template v-else>
+                <button @click="users.sort(sortByFieldDown('phone'))" class="btn">&uarr;</button>
+              </template>
+            </th>
           </thead>
           <tbody>
             <tr @click="fetchUser(user._id)" v-for="(user, idx) in displayPage" :key="idx">
-              <th scope="row">{{ idx + 1 }}</th>
+              <th scope="row">{{ user.id }}</th>
               <td>{{ user.firstName }}</td>
               <td>{{ user.lastName }}</td>
               <td>{{ user.email }}</td>
@@ -54,9 +94,9 @@
           </tbody>  
         </table>
          <div class="clearfix btn-group col-md-2 offset-md-5">
-             <button type="button" class="btn btn-sm btn-outline-secondary" v-if="page != 1" @click="page--"> - </button>
-             <button type="button" class="btn btn-sm btn-outline-secondary" v-for="(pageNumber, idx) in pages.slice(page-1, page+5)" :key="idx" @click="page = pageNumber"> {{pageNumber}} </button>
-             <button type="button" @click="page++" v-if="page < pages.length" class="btn btn-sm btn-outline-secondary"> + </button>
+             <button type="button" class="btn btn-sm btn-outline-secondary" v-if="page != 1" @click="page--"> &laquo; </button>
+             <button type="button" class="btn btn-sm btn-outline-secondary" v-for="(pageNumber, idx) in pages.slice(page - 1, page + 2)" :key="idx" @click="page = pageNumber"> {{pageNumber}} </button>
+             <button type="button" @click="page++" v-if="page < pages.length - 1" class="btn btn-sm btn-outline-secondary"> &raquo; </button>
            </div>
       <template v-if="user._id">
         <div class="card">
@@ -100,17 +140,19 @@ export default {
   data(){
     return {
       isCreate: false,
-      id: null,
-      firstName: null,
-      lastName: null,
-      phone: null,
-      email: null
+      id: '',
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: '',
+      validErrors: [],
+      isSorted: false
     }
   },
   computed: {
     ...mapGetters({
       users: 'users',
-      user: 'user'
+      user: 'user',
     }),
 
     displayPage(){
@@ -120,6 +162,11 @@ export default {
   mounted(){
     this.fetchUsers()
     this.setPages()
+  },
+  watch: {
+    users(){
+      this.setPages()
+    }
   },
   methods: {
     ...mapActions({
@@ -133,9 +180,64 @@ export default {
     },
 
     addUser(data){
-      this.fetchCreateUser(data)
-      this.fetchUsers()
-      this.isCreate = !this.isCreate
+      const flag = this.checkValid()
+      if(flag){
+        this.fetchCreateUser(data)
+        this.fetchUsers()
+        this.isCreate = !this.isCreate
+      }else {
+        console.log('Valid error')
+      }
+    },
+
+    checkValid(){
+      this.validErrors = []
+
+      if(!this.firstName){
+        this.validErrors.push('Укажите имя')
+      }
+
+      if(!this.lastName){
+        this.validErrors.push('Укажите фамилию')
+      }
+
+      if(!this.phone){
+        this.validErrors.push('Введите номер телефона')
+      }else if(!this.validPhone(this.phone)){
+        this.validErrors.push('Укажите корректный номер телефона')
+      }
+
+      if(!this.email){
+        this.validErrors.push('Укажите почту')
+      }else if(!this.validEmail(this.email)){
+        this.validErrors.push('Укажите корректный адрес электронной почты.')
+      }
+
+      if(this.validErrors.length === 0){
+        return true
+      }else {
+        return false
+      }
+    },
+
+    validEmail(email){
+      const regular = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      return regular.test(email)
+    },
+
+    validPhone(phone){
+      const regular = /^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/
+      return regular.test(phone)
+    },
+
+    sortByFieldUp(field){
+      this.isSorted = !this.isSorted
+      return (a, b) => a[field] > b[field] ? 1 : -1
+    },
+
+    sortByFieldDown(field){
+      this.isSorted = !this.isSorted
+      return (a, b) => a[field] < b[field] ? 1 : -1
     }
   }
 }

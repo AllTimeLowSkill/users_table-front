@@ -1,3 +1,5 @@
+import { mapGetters, mapActions } from 'vuex'
+
 export default {
     data() {
         return {
@@ -7,9 +9,23 @@ export default {
         }
     },
 
+    computed: {
+        ...mapGetters({
+            users: 'users'
+        })
+    },
+
+    mounted(){
+        this.fetchUsers()
+    },
+
     methods: {
+        ...mapActions({
+            fetchUsers: 'fetchUsers'
+        }),
+
         setPages(){
-            let numberOfPages = Math.ceil(30 / this.perPage)
+            let numberOfPages = Math.ceil(this.users.length / this.perPage)
             for(let i = 1; i <= numberOfPages; i++){
                 this.pages.push(i)
             }
