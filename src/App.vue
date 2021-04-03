@@ -7,84 +7,82 @@
     </template>
     <template v-else>
       <template v-if="!isCreate">
-      <button @click="switchCreate">Показать форму добавления пользователя</button>
-    </template>
-    <template v-else>
-      <button @click="switchCreate" type="submit">Скрыть форму добавления пользователя</button>
-      <form @submit.prevent="addUser({ id, firstName, lastName, email, phone })">
-        <div>
-          <label for="">ID</label>
-          <input v-model="id" type="text">
-        </div>
-        <div>
-          <label for="">First name</label>
-          <input v-model="firstName" type="text">
-        </div>
-        <div>
-          <label for="">Last name</label>
-          <input v-model="lastName" type="text">
-        </div>
-        <div>
-          <label for="">Email</label>
-          <input v-model="email" type="text">
-        </div>
-        <div>
-          <label for="">Phone</label>
-          <input v-model="phone" type="text">
-        </div>
-        <button type="submit">Добавить пользователя</button> 
-      </form>
-    </template>
-      <ul class="list-group">
-        <li class="list-group-item">
-          <div class="list">
-            <span>id</span>
-            <span>Firstname</span>
-            <span>Lastname</span>
-            <span>Email</span>
-            <span>Phone</span>
-          </div>
-        </li>
-        <li class="list-group-item" @click="fetchUser(user._id)" v-for="(user, idx) in users" :key="idx">
-          <div class="list">
-            <span>{{ idx + 1 }}</span>
-            <span>{{ user.firstName }}</span>
-            <span>{{ user.lastName }}</span>
-            <span>{{ user.email }}</span>
-            <span>{{ user.phone }}</span>
-          </div>
-        </li>
-      </ul>
-      <template v-if="user._id">
-        <form>
+        <button class="btn btn-success size-btn" @click="switchCreate">Показать форму добавления пользователя</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-danger size-btn" @click="switchCreate" type="submit">Скрыть форму добавления пользователя</button>
+        <form @submit.prevent="addUser({ id, firstName, lastName, email, phone })">
           <div>
+            <label class="form-label" for=""><b>ID</b></label>
+            <input class="form-control" v-model="id" type="text">
+          </div>
+          <div>
+            <label class="form-label" for=""><b>First name</b></label>
+            <input class="form-control" v-model="firstName" type="text">
+          </div>
+          <div>
+            <label class="form-label" for=""><b>Last name</b></label>
+            <input class="form-control" v-model="lastName" type="text">
+          </div>
+          <div>
+            <label class="form-label" for=""><b>Email</b></label>
+            <input class="form-control" v-model="email" type="text">
+          </div>
+          <div>
+            <label class="form-label" for=""><b>Phone</b></label>
+            <input class="form-control" v-model="phone" type="text">
+          </div>
+          <button class="btn btn-success size-btn" type="submit">Добавить пользователя</button> 
+        </form>
+      </template>
+        <table class="table">
+          <thead>
+            <th scope="col">ID</th>
+            <th scope="col">Firstname</th>
+            <th scope="col">Lastname</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+          </thead>
+          <tbody>
+            <tr @click="fetchUser(user._id)" v-for="(user, idx) in users" :key="idx">
+              <th scope="row">{{ idx + 1 }}</th>
+              <td>{{ user.firstName }}</td>
+              <td>{{ user.lastName }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.phone }}</td>
+            </tr>
+          </tbody>
+        </table>
+      <template v-if="user._id">
+        <div class="card">
+          <div class="card-body">
             <label for="">Fullname: </label>
             <span> {{ user.firstName }} {{ user.lastName }} </span>
           </div>
-          <div>
+          <div class="card-body">
             <label for="">Description: </label>
             <span> {{ user.description }} </span>
           </div>
-          <div>
+          <div class="card-body">
             <label for="">Street: </label>
             <span> {{ user.address.streetAddress }} </span>
           </div>
-          <div>
+          <div class="card-body">
             <label for="">City: </label>
             <span> {{ user.address.city }} </span>
           </div>
-          <div>
+          <div class="card-body">
             <label for="">State: </label>
             <span>{{ user.address.state }}</span>
           </div>
-          <div>
+          <div class="card-body">
             <label for="">Zip: </label>
             <span>{{ user.address.zip }}</span>
           </div>
-        </form>
+        </div>
       </template>
     </template>
-  </div>
+</div>
 </template>
 
 <script>
@@ -133,15 +131,13 @@ export default {
 <style lang="scss">
   .list {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
   }
 
-  .loader{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100vh;
-    height: 100vh;
+  .size-btn {
+    width: 100%;
   }
+
+
 </style>
