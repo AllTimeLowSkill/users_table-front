@@ -4,7 +4,7 @@ export default {
     data() {
         return {
             page: 1,
-            perPage: 10,
+            perPage: 50,
             pages: []
         }
     },

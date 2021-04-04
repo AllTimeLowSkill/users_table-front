@@ -1,8 +1,10 @@
 <template>
   <div id="app">
     <template v-if="users.length === 0">
-      <div class="spinner-border text-info" role="status">
-        <span class="visually-hidden">Loading...</span>
+      <div class="loader-container">
+        <div class="spinner-border text-info" role="status">
+          <span class="visually-hidden">Загружаем...</span>
+        </div>
       </div>
     </template>
     <template v-else>
@@ -12,6 +14,9 @@
       <template v-else>
         <button class="btn btn-danger size-btn" @click="switchCreate" type="submit">Скрыть форму добавления пользователя</button>
         <form @submit.prevent="addUser({ id, firstName, lastName, email, phone })">
+          <template v-if="isError">
+            <h3>Введите корректные данные</h3>
+          </template>
           <div>
             <label class="form-label" for=""><b>ID</b></label>
             <input class="form-control" v-model="id" type="text">
@@ -32,9 +37,13 @@
             <label class="form-label" for=""><b>Phone</b></label>
             <input class="form-control" v-model="phone" type="text">
           </div>
-          <button class="btn btn-success size-btn" type="submit">Добавить пользователя</button> 
+          <button class="btn btn-success size-btn" :disabled="id == '' || firstName == '' || lastName == '' || email == '' || phone == ''" type="submit">Добавить пользователя</button> 
         </form>
       </template>
+        <div class="d-flex">
+          <input v-model="searchingString" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <button @click="searchUser(searchingString)" class="btn btn-outline-success" type="submit">Search</button>
+        </div>
         <table class="table table-hover">
           <thead>
             <th scope="col">
@@ -84,7 +93,7 @@
             </th>
           </thead>
           <tbody>
-            <tr @click="fetchUser(user._id)" v-for="(user, idx) in displayPage" :key="idx">
+            <tr @click="SET_USER(user)" v-for="(user, idx) in displayPage" :key="idx">
               <th scope="row">{{ user.id }}</th>
               <td>{{ user.firstName }}</td>
               <td>{{ user.lastName }}</td>
@@ -98,7 +107,7 @@
              <button type="button" class="btn btn-sm btn-outline-secondary" v-for="(pageNumber, idx) in pages.slice(page - 1, page + 2)" :key="idx" @click="page = pageNumber"> {{pageNumber}} </button>
              <button type="button" @click="page++" v-if="page < pages.length - 1" class="btn btn-sm btn-outline-secondary"> &raquo; </button>
            </div>
-      <template v-if="user._id">
+      <template v-if="user.id">
         <div class="card">
           <div class="card-body">
             <label for="">Fullname: </label>
@@ -131,7 +140,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters, mapActions, mapMutations } from 'vuex'
 import paginatorMixin from './mixins/table_paginate'
 
 export default {
@@ -146,7 +155,9 @@ export default {
       phone: '',
       email: '',
       validErrors: [],
-      isSorted: false
+      isSorted: false,
+      searchingString: '',
+      isError: false
     }
   },
   computed: {
@@ -157,7 +168,7 @@ export default {
 
     displayPage(){
       return this.paginate(this.users)
-    }
+    },
   },
   mounted(){
     this.fetchUsers()
@@ -166,32 +177,47 @@ export default {
   watch: {
     users(){
       this.setPages()
-    }
+    },
+
   },
   methods: {
     ...mapActions({
       fetchUsers: 'fetchUsers',
-      fetchUser: 'fetchUser',
-      fetchCreateUser: 'fetchCreateUser'
+    }),
+
+    ...mapMutations({
+      SET_USER: 'SET_USER',
+      SET_NEW_USER: 'SET_NEW_USER',
+      SET_SEARCHING_USER: 'SET_SEARCHING_USER'
     }),
 
     switchCreate(){
       this.isCreate = !this.isCreate
     },
 
+    searchUser(searchingString){
+     this.SET_SEARCHING_USER(searchingString)
+    },
+
     addUser(data){
       const flag = this.checkValid()
       if(flag){
-        this.fetchCreateUser(data)
-        this.fetchUsers()
+        this.SET_NEW_USER(data)
+        //this.fetchUsers()
         this.isCreate = !this.isCreate
       }else {
-        console.log('Valid error')
+        this.isError = true
       }
     },
 
     checkValid(){
       this.validErrors = []
+
+      if(!this.id){
+        this.validErrors.push('Укажите ID')
+      } else if(!this.validId){
+        this.validErrors.push('Укажите корректный ID.')
+      }
 
       if(!this.firstName){
         this.validErrors.push('Укажите имя')
@@ -230,6 +256,10 @@ export default {
       return regular.test(phone)
     },
 
+    validId(id){
+      return /^-?\d+$/.test(id);
+    },
+
     sortByFieldUp(field){
       this.isSorted = !this.isSorted
       return (a, b) => a[field] > b[field] ? 1 : -1
@@ -254,5 +284,12 @@ export default {
     width: 100%;
   }
 
+  .loader-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+  }
 
 </style>

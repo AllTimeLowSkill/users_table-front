@@ -12,9 +12,21 @@ const mutations = {
         state.user = user
     },
 
-    SET_UPDATED_USERS(state, users){
-        state.users = users
-    }
+    SET_NEW_USER(state, user){
+        state.users.unshift(user)
+    },
+
+    SET_SEARCHING_USER(state, searchingString){
+        if(searchingString !== ''){
+            const searchUsers = []
+            state.users.filter(user => {
+                if(user.id === searchingString || user.firstName === searchingString || user.lastName === searchingString || user.email === searchingString || user.phone === searchingString){
+                    searchUsers.push(user)
+                }
+            })
+            state.users = searchUsers
+        }
+    },
 }
 const actions = {
     async fetchUsers({ commit }){
@@ -30,16 +42,6 @@ const actions = {
         try {
             const item = await getUser(id)
             commit('SET_USER', item.data)
-        } catch (error) {
-            
-        }
-    },
-
-    async fetchCreateUser({ commit }, data){
-        try {
-            const items = await createUser(data)
-
-            commit('SET_UPDATED_USERS', items.data)
         } catch (error) {
             
         }
